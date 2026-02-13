@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Report Action -->
+    <record id="action_report_medical_transcription" model="ir.actions.report">
+        <field name="name">Rapport Medical</field>
+        <field name="model">medical.transcription</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">medical_transcription.report_transcription_document</field>
+        <field name="report_file">medical_transcription.report_transcription_document</field>
+        <field name="print_report_name">'Rapport_Medical_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_medical_transcription"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+    </record>
+
+    <!-- Report Template -->
+    <template id="report_transcription_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="medical_transcription.report_transcription_content"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- Report Content - Sans external_layout pour eviter My Company -->
+    <template id="report_transcription_content">
+        <div class="article" style="font-family: Arial, Helvetica, sans-serif; padding: 20px;">
+
+            <!-- Custom Header with Logo -->
+            <div style="margin-bottom: 15px; border-bottom: 2px solid #0077B6; padding-bottom: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="vertical-align: middle;">
+                            <!-- Logo HDL en CSS pur (compatible wkhtmltopdf) -->
+                            <table style="border-collapse: collapse; border-spacing: 0; display: inline-block; vertical-align: middle; margin-right: 10px;">
+                                <tr>
+                                    <td style="width: 10px; height: 10px; background-color: #00A651;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #0077B6;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #00A651;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 10px; height: 10px; background-color: #0077B6;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #0077B6;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #0077B6;"></td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 10px; height: 10px; background-color: #00A651;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #0077B6;"></td>
+                                    <td style="width: 10px; height: 10px; background-color: #00A651;"></td>
+                                </tr>
+                            </table>
+                            <span style="font-size: 14pt; font-weight: bold; color: #0077B6; vertical-align: middle;">Hopital DOGTA-LAFIE (HDL)</span>
+                            <br/>
+                            <span style="font-size: 9pt; color: #00A651; font-weight: bold; margin-left: 42px;">SOGEHP - Hopital Niveau 4</span>
+                        </td>
+                        <td style="text-align: right; vertical-align: top; font-size: 9pt; color: #555; white-space: nowrap;">
+                            <div><strong>Date:</strong> <t t-esc="doc.create_date.strftime('%d/%m/%Y')"/></div>
+                            <div><strong>Heure:</strong> <t t-esc="doc.create_date.strftime('%H:%M')"/></div>
+                            <div style="margin-top: 3px;"><strong>Ref:</strong> <t t-esc="doc.name"/></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Title Bar -->
+            <div style="background-color: #0077B6; color: white; padding: 10px 15px; margin: 15px 0; border-radius: 3px;">
+                <span style="font-size: 14pt; font-weight: bold;">
+                    RAPPORT MEDICAL
+                </span>
+            </div>
+
+            <!-- Section 1: Patient Info -->
+            <t t-if="doc.extracted_data_json">
+                <t t-set="patient_info" t-value="doc.get_patient_info()"/>
+                <t t-if="patient_info">
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 11pt; font-weight: bold; color: #0077B6; border-bottom: 2px solid #00A651; padding-bottom: 5px; margin-bottom: 10px;">
+                            INFORMATIONS DU PATIENT
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                            <t t-foreach="patient_info.items()" t-as="item">
+                                <tr>
+                                    <td style="padding: 8px 5px; width: 30%; font-weight: bold; color: #333; vertical-align: top; border-bottom: 1px solid #e0e0e0;">
+                                        <t t-esc="item[0].replace('_', ' ').title()"/>
+                                    </td>
+                                    <td style="padding: 8px 5px; color: #444; border-bottom: 1px solid #e0e0e0;">
+                                        <t t-if="item[1]"><t t-esc="item[1]"/></t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                </t>
+            </t>
+
+            <!-- Section 2: Clinical Observations -->
+            <t t-if="doc.extracted_data_json">
+                <t t-set="clinical_data" t-value="doc.get_clinical_data()"/>
+                <t t-if="clinical_data">
+                    <div style="margin-bottom: 25px;">
+                        <div style="font-size: 11pt; font-weight: bold; color: #0077B6; border-bottom: 2px solid #00A651; padding-bottom: 5px; margin-bottom: 10px;">
+                            OBSERVATIONS ET CONCLUSIONS
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+                            <t t-foreach="clinical_data.items()" t-as="item">
+                                <tr>
+                                    <td style="padding: 8px 5px; width: 30%; font-weight: bold; color: #333; vertical-align: top; border-bottom: 1px solid #e0e0e0;">
+                                        <t t-esc="item[0].replace('_', ' ').title()"/>
+                                    </td>
+                                    <td style="padding: 8px 5px; color: #444; border-bottom: 1px solid #e0e0e0; white-space: pre-wrap;">
+                                        <t t-if="item[1]"><t t-esc="item[1]"/></t>
+                                        <t t-else="">-</t>
+                                    </td>
+                                </tr>
+                            </t>
+                        </table>
+                    </div>
+                </t>
+            </t>
+
+            <!-- Signature Section -->
+            <div style="margin-top: 50px;">
+                <table style="width: 100%;">
+                    <tr>
+                        <td style="width: 50%;"></td>
+                        <td style="width: 50%; text-align: center;">
+                            <div style="border-bottom: 1px solid #333; width: 200px; margin: 0 auto; height: 60px;"></div>
+                            <div style="margin-top: 5px; font-size: 9pt; color: #555;">Signature et cachet du Medecin</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div style="position: fixed; bottom: 20px; left: 20px; right: 20px;">
+                <div style="background-color: #00A651; height: 3px; margin-bottom: 8px;"></div>
+                <table style="width: 100%; font-size: 7pt; color: #666;">
+                    <tr>
+                        <td style="text-align: left;">
+                            National n°1 Agoènyivé <br/>
+                            Lomé, Togo
+                        </td>
+                        <td style="text-align: center;">
+                            Tel: +228 22 53 50 50  | Email: contact@hdl.tg
+                        </td>
+                        <td style="text-align: right;">
+                            www.hdl.tg
+                        </td>
+                    </tr>
+                </table>
+                <div style="text-align: center; margin-top: 3px; font-size: 6pt; color: #00A651; font-weight: bold;">
+                    SOGEHP - Au service de la sante pour tous
+                </div>
+            </div>
+
+        </div>
+    </template>
+
+</odoo>

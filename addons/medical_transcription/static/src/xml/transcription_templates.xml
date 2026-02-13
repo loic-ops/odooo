@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Main Transcription Action Template -->
+    <t t-name="medical_transcription.TranscriptionAction" owl="1">
+        <div class="o_medical_transcription container-fluid py-4">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="mb-0">
+                        <i class="fa fa-microphone me-2"/>Transcription Medicale
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Error Alert -->
+            <div t-if="state.error" class="alert alert-danger alert-dismissible fade show">
+                <button type="button" class="btn-close" t-on-click="() => this.state.error = null"/>
+                <i class="fa fa-exclamation-triangle me-2"/>
+                <t t-esc="state.error"/>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div t-if="state.isLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted" t-if="state.step === 'transcribing'">
+                    <strong>Transcription en cours...</strong><br/>
+                    Cela peut prendre quelques minutes selon la duree de l'audio.
+                </p>
+                <p class="mt-3 text-muted" t-elif="state.step === 'select'">
+                    Chargement des templates...
+                </p>
+            </div>
+
+            <!-- Step 1: Template Selection -->
+            <div t-if="state.step === 'select' and !state.isLoading" class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-list-alt me-2"/>Etape 1: Choisir le type de note
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <select class="form-select form-select-lg" t-on-change="onTemplateSelect">
+                        <option value="">-- Selectionnez un template --</option>
+                        <t t-foreach="state.templates" t-as="template" t-key="template.type">
+                            <option t-att-value="template.type">
+                                <t t-esc="template.display_name"/>
+                                <t t-if="template.description"> - <t t-esc="template.description"/></t>
+                            </option>
+                        </t>
+                    </select>
+                    <div t-if="state.templates.length === 0" class="alert alert-warning mt-3 mb-0">
+                        <i class="fa fa-warning me-2"/>
+                        Aucun template disponible. Verifiez la connexion a l'API dans les parametres.
+                    </div>
+
+                    <!-- Custom Fields Input -->
+                    <div t-if="state.templates.length > 0" class="mt-4">
+                        <label class="form-label fw-bold">
+                            <i class="fa fa-plus-circle me-2"/>Champs personnalises (optionnel)
+                        </label>
+                        <p class="text-muted small mb-2">
+                            Ajoutez des champs specifiques que vous souhaitez extraire de la transcription, en plus des champs du template.
+                        </p>
+                        <div class="input-group mb-2">
+                            <input type="text"
+                                   class="form-control"
+                                   placeholder="Nom du champ (ex: Allergies, Antecedents...)"
+                                   t-att-value="state.newCustomField"
+                                   t-on-input="onCustomFieldInput"
+                                   t-on-keypress="onCustomFieldKeypress"/>
+                            <button class="btn btn-outline-primary" type="button" t-on-click="addCustomField">
+                                <i class="fa fa-plus"/> Ajouter
+                            </button>
+                        </div>
+                        <div t-if="state.customFields.length > 0" class="d-flex flex-wrap gap-2 mt-2">
+                            <t t-foreach="state.customFields" t-as="field" t-key="field">
+                                <span class="badge bg-primary d-flex align-items-center gap-2 py-2 px-3">
+                                    <t t-esc="field"/>
+                                    <button type="button"
+                                            class="btn-close btn-close-white btn-sm"
+                                            t-on-click="() => this.removeCustomField(field)"
+                                            style="font-size: 0.6rem;"/>
+                                </span>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Audio Recording/Import -->
+            <div t-if="state.step === 'record' and !state.isLoading">
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fa fa-microphone me-2"/>Etape 2: Enregistrer ou importer l'audio
+                        </h5>
+                        <span class="badge bg-light text-dark">
+                            <t t-esc="state.selectedTemplate?.display_name"/>
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <AudioRecorder onAudioReady.bind="onAudioReady"/>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" t-on-click="onReset">
+                        <i class="fa fa-arrow-left me-1"/> Retour
+                    </button>
+                    <button class="btn btn-primary btn-lg"
+                            t-on-click="onTranscribe"
+                            t-att-disabled="!state.audioData">
+                        <i class="fa fa-magic me-1"/> Transcrire
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Review and Edit -->
+            <div t-if="state.step === 'review' and !state.isLoading">
+                <div class="row">
+                    <!-- Extracted Fields -->
+                    <div class="col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-edit me-2"/>Donnees Extraites
+                                </h5>
+                            </div>
+                            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                                <DynamicFormEditor
+                                    fields="state.templateFields"
+                                    values="state.extractedData"
+                                    onFieldChange.bind="onFieldChange"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Report - Styled Preview -->
+                    <div class="col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-file-text me-2"/>Rapport Medical
+                                </h5>
+                                <button class="btn btn-sm btn-outline-light"
+                                        t-on-click="toggleReportEditMode">
+                                    <i t-att-class="state.reportEditMode ? 'fa fa-eye' : 'fa fa-pencil'" class="me-1"/>
+                                    <t t-if="state.reportEditMode">Apercu</t>
+                                    <t t-else="">Modifier</t>
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <!-- Edit Mode -->
+                                <div t-if="state.reportEditMode" class="p-3">
+                                    <textarea class="form-control"
+                                              rows="18"
+                                              style="font-family: monospace; font-size: 0.9rem;"
+                                              t-att-value="state.medicalReport"
+                                              t-on-input="onReportChange"/>
+                                </div>
+
+                                <!-- Preview Mode - Styled Report -->
+                                <div t-else="" class="report-preview" style="max-height: 500px; overflow-y: auto;">
+                                    <div class="report-preview-inner" style="font-family: Arial, Helvetica, sans-serif; padding: 15px; background: white;">
+
+                                        <!-- Header with Logo - compact -->
+                                        <div style="margin-bottom: 10px; border-bottom: 2px solid #0077B6; padding-bottom: 8px;">
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <tr>
+                                                    <td style="vertical-align: middle;">
+                                                        <div style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                                                            <!-- Logo HDL CSS -->
+                                                            <table style="border-collapse: collapse; border-spacing: 0;">
+                                                                <tr>
+                                                                    <td style="width: 8px; height: 8px; background-color: #00A651;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #0077B6;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #00A651;"></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="width: 8px; height: 8px; background-color: #0077B6;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #0077B6;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #0077B6;"></td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td style="width: 8px; height: 8px; background-color: #00A651;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #0077B6;"></td>
+                                                                    <td style="width: 8px; height: 8px; background-color: #00A651;"></td>
+                                                                </tr>
+                                                            </table>
+                                                        </div>
+                                                        <div style="display: inline-block; vertical-align: middle;">
+                                                            <span style="font-size: 11pt; font-weight: bold; color: #0077B6;">Hopital DOGTA-LAFIE (HDL)</span><br/>
+                                                            <span style="font-size: 7pt; color: #00A651; font-weight: bold;">SOGEHP - Hopital Niveau 4</span>
+                                                        </div>
+                                                    </td>
+                                                    <td style="text-align: right; vertical-align: middle; font-size: 7pt; color: #555; white-space: nowrap;">
+                                                        <div><strong>Date:</strong> <t t-esc="getCurrentDate()"/></div>
+                                                        <div><strong>Heure:</strong> <t t-esc="getCurrentTime()"/></div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <!-- Title Bar -->
+                                        <div style="background-color: #0077B6; color: white; padding: 6px 10px; margin: 8px 0; border-radius: 3px;">
+                                            <span style="font-size: 11pt; font-weight: bold;">RAPPORT MEDICAL</span>
+                                        </div>
+
+                                        <!-- Section 1: Patient Info -->
+                                        <t t-if="getPatientInfoEntries().length > 0">
+                                            <div style="margin-bottom: 12px;">
+                                                <div style="font-size: 9pt; font-weight: bold; color: #0077B6; border-bottom: 2px solid #00A651; padding-bottom: 3px; margin-bottom: 6px;">
+                                                    INFORMATIONS DU PATIENT
+                                                </div>
+                                                <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+                                                    <t t-foreach="getPatientInfoEntries()" t-as="entry" t-key="entry[0]">
+                                                        <tr>
+                                                            <td style="padding: 3px 4px; width: 40%; font-weight: bold; color: #333; vertical-align: top; border-bottom: 1px solid #e0e0e0;">
+                                                                <t t-esc="formatFieldName(entry[0])"/>
+                                                            </td>
+                                                            <td style="padding: 3px 4px; color: #444; border-bottom: 1px solid #e0e0e0;">
+                                                                <t t-if="entry[1]"><t t-esc="entry[1]"/></t>
+                                                                <t t-else="">-</t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </table>
+                                            </div>
+                                        </t>
+
+                                        <!-- Section 2: Clinical Observations -->
+                                        <t t-if="getClinicalDataEntries().length > 0">
+                                            <div style="margin-bottom: 12px;">
+                                                <div style="font-size: 9pt; font-weight: bold; color: #0077B6; border-bottom: 2px solid #00A651; padding-bottom: 3px; margin-bottom: 6px;">
+                                                    OBSERVATIONS ET CONCLUSIONS
+                                                </div>
+                                                <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+                                                    <t t-foreach="getClinicalDataEntries()" t-as="entry" t-key="entry[0]">
+                                                        <tr>
+                                                            <td style="padding: 3px 4px; width: 40%; font-weight: bold; color: #333; vertical-align: top; border-bottom: 1px solid #e0e0e0;">
+                                                                <t t-esc="formatFieldName(entry[0])"/>
+                                                            </td>
+                                                            <td style="padding: 3px 4px; color: #444; border-bottom: 1px solid #e0e0e0; white-space: pre-wrap;">
+                                                                <t t-if="entry[1]"><t t-esc="entry[1]"/></t>
+                                                                <t t-else="">-</t>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </table>
+                                            </div>
+                                        </t>
+
+                                        <!-- Signature Section -->
+                                        <div style="margin-top: 25px;">
+                                            <table style="width: 100%;">
+                                                <tr>
+                                                    <td style="width: 50%;"></td>
+                                                    <td style="width: 50%; text-align: center;">
+                                                        <div style="border-bottom: 1px solid #333; width: 150px; margin: 0 auto; height: 30px;"></div>
+                                                        <div style="margin-top: 3px; font-size: 7pt; color: #555;">Signature et cachet du Medecin</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <!-- Footer -->
+                                        <div style="margin-top: 15px; border-top: 2px solid #00A651; padding-top: 4px;">
+                                            <table style="width: 100%; font-size: 6pt; color: #666;">
+                                                <tr>
+                                                    <td style="text-align: left;">BP 123, Lome - TOGO</td>
+                                                    <td style="text-align: center;">Tel: +228 22 53 50 50 | Email: contact@hdl.tg</td>
+                                                    <td style="text-align: right;">www.hdl.tg</td>
+                                                </tr>
+                                            </table>
+                                            <div style="text-align: center; margin-top: 2px; font-size: 5pt; color: #00A651; font-weight: bold;">
+                                                SOGEHP - Au service de la sante pour tous
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Raw Transcription (collapsible) -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center"
+                         style="cursor: pointer;"
+                         t-on-click="toggleRawTranscription">
+                        <h5 class="mb-0">
+                            <i class="fa fa-file-audio-o me-2"/>Transcription Brute
+                        </h5>
+                        <i t-att-class="state.showRawTranscription ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"/>
+                    </div>
+                    <div t-if="state.showRawTranscription" class="card-body">
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 200px; overflow-y: auto; font-family: Arial, sans-serif; font-size: 0.95rem; line-height: 1.5;">
+                            <t t-esc="state.whisperTranscription || 'Aucune transcription brute disponible'"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-secondary" t-on-click="onReset">
+                        <i class="fa fa-times me-1"/> Annuler
+                    </button>
+                    <button class="btn btn-success btn-lg" t-on-click="onValidate">
+                        <i class="fa fa-check me-1"/> Valider et Sauvegarder
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Validated - Downloads -->
+            <div t-if="state.step === 'validated' and !state.isLoading" class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-check-circle me-2"/>Transcription Validee
+                    </h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fa fa-check-circle text-success" style="font-size: 4rem;"/>
+                    </div>
+                    <p class="lead">Votre transcription a ete validee avec succes.</p>
+
+                    <div class="d-flex justify-content-center gap-3 my-4">
+                        <button class="btn btn-outline-danger btn-lg" t-on-click="onDownloadPdf">
+                            <i class="fa fa-file-pdf-o me-2"/>Telecharger PDF
+                        </button>
+                        <button class="btn btn-outline-primary btn-lg" t-on-click="onDownloadJson">
+                            <i class="fa fa-file-code-o me-2"/>Telecharger JSON
+                        </button>
+                    </div>
+
+                    <hr class="my-4"/>
+
+                    <button class="btn btn-primary btn-lg" t-on-click="onReset">
+                        <i class="fa fa-plus me-1"/> Nouvelle Transcription
+                    </button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Audio Recorder Component Template -->
+    <t t-name="medical_transcription.AudioRecorder" owl="1">
+        <div class="audio-recorder">
+            <!-- Error -->
+            <div t-if="state.error" class="alert alert-warning mb-3">
+                <i class="fa fa-warning me-2"/>
+                <t t-esc="state.error"/>
+            </div>
+
+            <!-- Recording Controls -->
+            <div class="d-flex gap-3 align-items-center mb-3 flex-wrap">
+                <!-- Record Button -->
+                <button t-if="!state.isRecording"
+                        class="btn btn-danger btn-lg rounded-circle record-btn"
+                        t-on-click="startRecording"
+                        title="Commencer l'enregistrement">
+                    <i class="fa fa-microphone fa-lg"/>
+                </button>
+
+                <!-- Stop Button -->
+                <button t-if="state.isRecording"
+                        class="btn btn-dark btn-lg rounded-circle recording-pulse"
+                        t-on-click="stopRecording"
+                        title="Arreter l'enregistrement">
+                    <i class="fa fa-stop fa-lg"/>
+                </button>
+
+                <!-- Recording Timer -->
+                <span t-if="state.isRecording" class="badge bg-danger fs-5 px-3 py-2">
+                    <i class="fa fa-circle text-white me-2 blink"/>
+                    <t t-esc="formatTime(state.recordingTime)"/>
+                </span>
+
+                <span class="text-muted mx-2">ou</span>
+
+                <!-- Import Button -->
+                <label class="btn btn-outline-secondary">
+                    <i class="fa fa-upload me-2"/> Importer un fichier audio
+                    <input type="file"
+                           accept=".mp3,.wav,.m4a,.webm,.ogg,.mp4,.flac,.aac,audio/*"
+                           class="d-none"
+                           t-on-change="onFileImport"/>
+                </label>
+            </div>
+
+            <!-- Supported formats hint -->
+            <small class="text-muted d-block mb-3">
+                <i class="fa fa-info-circle me-1"/>
+                Formats supportes: MP3, WAV, M4A, WebM, OGG, FLAC, AAC
+            </small>
+
+            <!-- Audio Preview -->
+            <div t-if="state.hasRecording" class="mt-3 p-3 bg-light rounded border">
+                <div class="d-flex align-items-center gap-3">
+                    <audio t-att-src="state.audioUrl" controls="controls" class="flex-grow-1"/>
+                    <button class="btn btn-sm btn-outline-danger"
+                            t-on-click="clearRecording"
+                            title="Supprimer l'audio">
+                        <i class="fa fa-trash"/>
+                    </button>
+                </div>
+                <small class="text-muted mt-2 d-block">
+                    <i class="fa fa-file-audio-o me-1"/>
+                    <t t-esc="state.filename"/>
+                </small>
+            </div>
+        </div>
+    </t>
+
+    <!-- Dynamic Form Editor Component Template -->
+    <t t-name="medical_transcription.DynamicFormEditor" owl="1">
+        <div class="dynamic-form">
+            <t t-foreach="props.fields" t-as="field" t-key="field.key">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">
+                        <t t-esc="field.label"/>
+                        <span t-if="field.required" class="text-danger ms-1">*</span>
+                    </label>
+                    <textarea class="form-control"
+                              rows="3"
+                              t-att-value="getFieldValue(field.key)"
+                              t-att-readonly="props.readonly"
+                              t-att-placeholder="field.label"
+                              t-on-input="(ev) => this.onInputChange(field.key, ev)"/>
+                </div>
+            </t>
+
+            <div t-if="!props.fields || props.fields.length === 0" class="text-muted text-center py-4">
+                <i class="fa fa-info-circle me-2"/>
+                Aucun champ defini pour ce template.
+            </div>
+        </div>
+    </t>
+
+</templates>

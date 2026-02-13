@@ -1,0 +1,560 @@
+/* Medical Transcription Module - SIH Theme */
+
+/* ========================================
+   Color Variables (SIH Theme - Light Blue)
+   ======================================== */
+:root {
+    --sih-navbar: #2196f3;
+    --sih-navbar-dark: #1976d2;
+    --sih-primary: #2196f3;
+    --sih-primary-dark: #1976d2;
+    --sih-primary-light: #64b5f6;
+    --sih-success: #4caf50;
+    --sih-success-dark: #388e3c;
+    --sih-danger: #f44336;
+    --sih-warning: #ff9800;
+    --sih-info: #03a9f4;
+    --sih-purple: #9c27b0;
+    --sih-orange: #ff5722;
+    --sih-teal: #009688;
+    --sih-text-dark: #333333;
+    --sih-text-muted: #666666;
+    --sih-bg-light: #f5f7fa;
+    --sih-border: #e0e0e0;
+}
+
+/* ========================================
+   Menu Bar - Light Blue
+   ======================================== */
+.o_main_navbar {
+    background-color: var(--sih-navbar) !important;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.2);
+}
+
+.o_main_navbar .o_menu_brand,
+.o_main_navbar .dropdown-toggle,
+.o_main_navbar .o_menu_sections > * > a,
+.o_main_navbar .o_menu_sections > * > button {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+.o_main_navbar .o_menu_sections > * > a:hover,
+.o_main_navbar .o_menu_sections > * > button:hover,
+.o_main_navbar .dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+.o_main_navbar .o_menu_sections .show > a,
+.o_main_navbar .o_menu_sections .show > button {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+.o_main_navbar .o_menu_systray > * {
+    color: #ffffff !important;
+}
+
+.o_main_navbar .o_menu_systray .dropdown-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ========================================
+   Page Background - Light Grey
+   ======================================== */
+.o_action_manager {
+    background-color: var(--sih-bg-light) !important;
+}
+
+/* ========================================
+   Main Container
+   ======================================== */
+.o_medical_transcription {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    overflow-y: auto;
+    max-height: calc(100vh - 56px);
+}
+
+/* Page Title - Like SIH welcome */
+.o_medical_transcription h2 {
+    color: var(--sih-text-dark);
+    font-weight: 400;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.o_medical_transcription h2 i {
+    color: var(--sih-navbar);
+}
+
+/* ========================================
+   Cards - Clean White Style
+   ======================================== */
+.o_medical_transcription .card {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.o_medical_transcription .card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    transition: box-shadow 0.3s ease;
+}
+
+.o_medical_transcription .card-header {
+    border-radius: 0 !important;
+    border-bottom: 1px solid var(--sih-border);
+    padding: 16px 20px;
+}
+
+/* Primary card headers - Light Blue */
+.o_medical_transcription .card-header.bg-primary {
+    background-color: var(--sih-navbar) !important;
+    border-bottom: none;
+}
+
+/* Info card headers - Light Blue */
+.o_medical_transcription .card-header.bg-info {
+    background-color: var(--sih-navbar) !important;
+    border-bottom: none;
+}
+
+/* Success card headers - Light Blue */
+.o_medical_transcription .card-header.bg-success {
+    background-color: var(--sih-navbar) !important;
+    border-bottom: none;
+}
+
+/* Secondary card headers - Blue Grey */
+.o_medical_transcription .card-header.bg-secondary {
+    background-color: #78909c !important;
+    border-bottom: none;
+}
+
+.o_medical_transcription .card-body {
+    padding: 20px;
+}
+
+/* ========================================
+   Buttons - Light Blue Primary Style
+   ======================================== */
+.o_medical_transcription .btn-primary {
+    background-color: var(--sih-navbar) !important;
+    border: none !important;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.o_medical_transcription .btn-primary:hover {
+    background-color: var(--sih-navbar-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+}
+
+.o_medical_transcription .btn-success {
+    background-color: var(--sih-navbar) !important;
+    border: none !important;
+    border-radius: 8px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+}
+
+.o_medical_transcription .btn-success:hover {
+    background-color: var(--sih-navbar-dark) !important;
+    transform: translateY(-1px);
+}
+
+.o_medical_transcription .btn-outline-primary {
+    color: var(--sih-navbar) !important;
+    border: 2px solid var(--sih-navbar) !important;
+    border-radius: 8px;
+    font-weight: 500;
+    background: transparent !important;
+}
+
+.o_medical_transcription .btn-outline-primary:hover {
+    background-color: var(--sih-navbar) !important;
+    color: #ffffff !important;
+}
+
+.o_medical_transcription .btn-outline-secondary {
+    color: var(--sih-text-muted) !important;
+    border: 2px solid var(--sih-border) !important;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.o_medical_transcription .btn-outline-secondary:hover {
+    background-color: #f5f5f5 !important;
+    color: var(--sih-text-dark) !important;
+    border-color: #bdbdbd !important;
+}
+
+.o_medical_transcription .btn-outline-danger {
+    color: var(--sih-danger) !important;
+    border: 2px solid var(--sih-danger) !important;
+    border-radius: 8px;
+}
+
+.o_medical_transcription .btn-outline-danger:hover {
+    background-color: var(--sih-danger) !important;
+    color: #ffffff !important;
+}
+
+.o_medical_transcription .btn {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.o_medical_transcription .btn-lg {
+    padding: 12px 28px;
+    font-size: 1rem;
+}
+
+/* ========================================
+   Record Button - Red/Pink like SIH icons
+   ======================================== */
+.o_medical_transcription .record-btn {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background-color: #f44336 !important;
+    border: none !important;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.o_medical_transcription .record-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(244, 67, 54, 0.5);
+}
+
+.o_medical_transcription .recording-pulse {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: pulse 1.5s infinite;
+    border-radius: 50%;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.6);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(244, 67, 54, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(244, 67, 54, 0);
+    }
+}
+
+/* ========================================
+   Badges - Light Blue Style
+   ======================================== */
+.o_medical_transcription .badge.bg-primary {
+    background: var(--sih-navbar) !important;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.o_medical_transcription .badge.bg-light {
+    background-color: #e3f2fd !important;
+    color: var(--sih-navbar) !important;
+    font-weight: 500;
+}
+
+.o_medical_transcription .badge.bg-danger {
+    background: var(--sih-danger) !important;
+}
+
+.o_medical_transcription .badge {
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* ========================================
+   Form Elements - Clean Style
+   ======================================== */
+.o_medical_transcription .form-select,
+.o_medical_transcription .form-control {
+    border: 2px solid var(--sih-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.o_medical_transcription .form-select:focus,
+.o_medical_transcription .form-control:focus {
+    border-color: var(--sih-navbar) !important;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2) !important;
+    outline: none;
+}
+
+.o_medical_transcription .form-select-lg {
+    padding: 14px 18px;
+    font-size: 1.05rem;
+}
+
+.o_medical_transcription textarea {
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.o_medical_transcription .form-label {
+    margin-bottom: 8px;
+    color: var(--sih-text-dark);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ========================================
+   Alerts - Clean Style
+   ======================================== */
+.o_medical_transcription .alert {
+    border-radius: 10px;
+    border: none;
+    padding: 16px 20px;
+}
+
+.o_medical_transcription .alert-danger {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.o_medical_transcription .alert-warning {
+    background-color: #fff8e1;
+    color: #f57c00;
+}
+
+.o_medical_transcription .alert-info {
+    background-color: #e3f2fd;
+    color: var(--sih-navbar);
+}
+
+/* ========================================
+   Loading Spinner - Light Blue
+   ======================================== */
+.o_medical_transcription .spinner-border {
+    border-width: 3px;
+    color: var(--sih-navbar) !important;
+    width: 3rem;
+    height: 3rem;
+}
+
+.o_medical_transcription .text-primary {
+    color: var(--sih-navbar) !important;
+}
+
+/* Loading text */
+.o_medical_transcription .text-muted {
+    color: var(--sih-text-muted) !important;
+}
+
+/* ========================================
+   Success State
+   ======================================== */
+.o_medical_transcription .fa-check-circle.text-success {
+    color: var(--sih-success) !important;
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   Audio Player
+   ======================================== */
+.o_medical_transcription .audio-recorder audio {
+    height: 48px;
+    border-radius: 24px;
+    width: 100%;
+}
+
+.o_medical_transcription .audio-recorder .bg-light {
+    background-color: #f8f9fa !important;
+    border: 2px solid var(--sih-border) !important;
+    border-radius: 12px;
+}
+
+/* ========================================
+   Blinking Animation
+   ======================================== */
+.o_medical_transcription .blink {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   Transcription Display
+   ======================================== */
+.o_medical_transcription .bg-light {
+    background-color: #f8f9fa !important;
+}
+
+/* ========================================
+   Step Headers - Colored Icons like SIH
+   ======================================== */
+.o_medical_transcription .card-header h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.o_medical_transcription .card-header h5 i {
+    font-size: 1.1rem;
+}
+
+/* ========================================
+   Custom Fields Tags
+   ======================================== */
+.o_medical_transcription .badge.bg-primary.d-flex {
+    background: var(--sih-navbar) !important;
+    border-radius: 20px;
+    padding: 8px 14px;
+}
+
+/* ========================================
+   Action Buttons Row
+   ======================================== */
+.o_medical_transcription .d-flex.gap-2 {
+    margin-top: 20px;
+}
+
+/* ========================================
+   Responsive
+   ======================================== */
+@media (max-width: 768px) {
+    .o_medical_transcription {
+        padding: 16px;
+    }
+
+    .o_medical_transcription .record-btn,
+    .o_medical_transcription .recording-pulse {
+        width: 64px;
+        height: 64px;
+    }
+
+    .o_medical_transcription .d-flex.gap-3 {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    .o_medical_transcription .d-flex.gap-3 .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .o_medical_transcription .card-body {
+        padding: 16px;
+    }
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+.o_medical_transcription p {
+    color: var(--sih-text-muted);
+    line-height: 1.6;
+}
+
+.o_medical_transcription strong {
+    color: var(--sih-text-dark);
+}
+
+/* ========================================
+   Dividers
+   ======================================== */
+.o_medical_transcription hr {
+    border-color: var(--sih-border);
+    opacity: 1;
+}
+
+/* ========================================
+   Download Buttons - Like SIH action buttons
+   ======================================== */
+.o_medical_transcription .btn-outline-danger.btn-lg {
+    border-radius: 8px;
+    padding: 12px 24px;
+}
+
+.o_medical_transcription .btn-outline-primary.btn-lg {
+    border-radius: 8px;
+    padding: 12px 24px;
+    color: var(--sih-navbar) !important;
+    border-color: var(--sih-navbar) !important;
+}
+
+.o_medical_transcription .btn-outline-primary.btn-lg:hover {
+    background-color: var(--sih-navbar) !important;
+    color: #ffffff !important;
+}
+
+/* ========================================
+   Report Preview - Styled Medical Report
+   ======================================== */
+.o_medical_transcription .report-preview {
+    background: #f0f0f0;
+    border-radius: 0 0 12px 12px;
+}
+
+.o_medical_transcription .report-preview-inner {
+    background: white;
+    margin: 12px;
+    border-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.o_medical_transcription .report-preview table {
+    border-collapse: collapse;
+}
+
+.o_medical_transcription .report-preview td {
+    padding: 0;
+}
+
+.o_medical_transcription .btn-outline-light {
+    border: 1px solid rgba(255,255,255,0.6) !important;
+    color: white !important;
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.o_medical_transcription .btn-outline-light:hover {
+    background-color: rgba(255,255,255,0.2) !important;
+    border-color: white !important;
+}

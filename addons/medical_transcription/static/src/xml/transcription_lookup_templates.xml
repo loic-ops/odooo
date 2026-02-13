@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="medical_transcription.TranscriptionLookup" owl="1">
+        <div class="o_medical_transcription container-fluid py-4">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="mb-0">
+                        <i class="fa fa-search me-2"/>Consulter une Transcription
+                    </h2>
+                </div>
+            </div>
+
+            <!-- Error Alert -->
+            <div t-if="state.error" class="alert alert-danger alert-dismissible fade show">
+                <button type="button" class="btn-close" t-on-click="() => this.state.error = null"/>
+                <i class="fa fa-exclamation-triangle me-2"/>
+                <t t-esc="state.error"/>
+            </div>
+
+            <!-- Search Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fa fa-search me-2"/>Rechercher par ID de Transcription API
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-lg"
+                               placeholder="Saisir l'ID de transcription API (ex: 1234567890123)"
+                               t-att-value="state.apiTranscriptionId"
+                               t-on-input="onIdInput"
+                               t-on-keypress="onIdKeypress"/>
+                        <button class="btn btn-primary btn-lg"
+                                t-on-click="onLookup"
+                                t-att-disabled="state.isLoading || !state.apiTranscriptionId">
+                            <i t-att-class="state.isLoading ? 'fa fa-spinner fa-spin me-1' : 'fa fa-search me-1'"/>
+                            Rechercher
+                        </button>
+                    </div>
+                    <div t-if="state.result" class="mt-2">
+                        <button class="btn btn-outline-secondary btn-sm" t-on-click="onReset">
+                            <i class="fa fa-times me-1"/> Effacer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div t-if="state.isLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3 text-muted">Chargement des details...</p>
+            </div>
+
+            <!-- Results -->
+            <div t-if="state.result and !state.isLoading">
+
+                <!-- General Info -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fa fa-info-circle me-2"/>Informations Generales
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-2">
+                                <strong>ID Transcription:</strong>
+                                <span class="ms-2"><t t-esc="state.result.transcription_id"/></span>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <strong>Type:</strong>
+                                <span class="ms-2"><t t-esc="state.result.transcription_type"/></span>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <strong>Date de creation:</strong>
+                                <span class="ms-2"><t t-esc="formatTimestamp(state.result.created_at)"/></span>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-4 mb-2">
+                                <strong>Valide:</strong>
+                                <span class="ms-2 badge" t-att-class="isValidated() ? 'bg-success' : 'bg-warning'">
+                                    <t t-if="isValidated()">Oui</t>
+                                    <t t-else="">Non</t>
+                                </span>
+                            </div>
+                            <div t-if="state.result.validated_at" class="col-md-4 mb-2">
+                                <strong>Valide le:</strong>
+                                <span class="ms-2"><t t-esc="formatTimestamp(state.result.validated_at)"/></span>
+                            </div>
+                            <div t-if="state.result.updated_at" class="col-md-4 mb-2">
+                                <strong>Derniere mise a jour:</strong>
+                                <span class="ms-2"><t t-esc="formatTimestamp(state.result.updated_at)"/></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Info -->
+                <t t-if="getPatientInfoEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-user me-2"/>Informations du Patient
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="mb-0 p-3" style="background-color: #1e1e1e; color: #d4d4d4; border-radius: 0 0 0.375rem 0.375rem; max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;"><t t-esc="getPatientInfoJson()"/></pre>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Requested Fields -->
+                <t t-if="getRequestedFieldEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-list me-2"/>Champs Demandes
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="mb-0 p-3" style="background-color: #1e1e1e; color: #d4d4d4; border-radius: 0 0 0.375rem 0.375rem; max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;"><t t-esc="getRequestedFieldsJson()"/></pre>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Additional Fields -->
+                <t t-if="getAdditionalFieldEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-plus-circle me-2"/>Champs Additionnels
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="mb-0 p-3" style="background-color: #1e1e1e; color: #d4d4d4; border-radius: 0 0 0.375rem 0.375rem; max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;"><t t-esc="getAdditionalFieldsJson()"/></pre>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Whisper Transcription & Cleaned Text -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-file-audio-o me-2"/>Transcription Brute (Whisper)
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto; font-size: 0.95rem; line-height: 1.5;">
+                                    <t t-esc="state.result.whisper_transcription || '-'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="fa fa-file-text-o me-2"/>Texte Nettoye
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 300px; overflow-y: auto; font-size: 0.95rem; line-height: 1.5;">
+                                    <t t-esc="state.result.cleaned_text || '-'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Report -->
+                <t t-if="state.result.medical_report">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-file-text me-2"/>Rapport Medical
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="bg-light p-3 rounded" style="white-space: pre-wrap; max-height: 400px; overflow-y: auto; font-size: 0.95rem; line-height: 1.5;">
+                                <t t-esc="state.result.medical_report"/>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Validated Data -->
+                <t t-if="getValidatedDataEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-check-circle me-2"/>Donnees Validees
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="mb-0 p-3" style="background-color: #1e1e1e; color: #d4d4d4; border-radius: 0 0 0.375rem 0.375rem; max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;"><t t-esc="getValidatedDataJson()"/></pre>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Files -->
+                <t t-if="getFileEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-files-o me-2"/>Fichiers Disponibles
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <t t-foreach="getFileEntries()" t-as="entry" t-key="entry[0]">
+                                <div class="mb-2">
+                                    <strong><t t-esc="entry[0].toUpperCase()"/>:</strong>
+                                    <code class="ms-2"><t t-esc="entry[1]"/></code>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- Metadata -->
+                <t t-if="getMetadataEntries().length > 0">
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">
+                                <i class="fa fa-cog me-2"/>Metadonnees
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <pre class="mb-0 p-3" style="background-color: #1e1e1e; color: #d4d4d4; border-radius: 0 0 0.375rem 0.375rem; max-height: 400px; overflow-y: auto; font-size: 0.9rem; line-height: 1.6;"><t t-esc="getMetadataJson()"/></pre>
+                        </div>
+                    </div>
+                </t>
+
+            </div>
+        </div>
+    </t>
+
+</templates>

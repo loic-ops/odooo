@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_medical_transcription_all,medical.transcription.all,model_medical_transcription,base.group_user,1,1,1,0
+access_medical_transcription_user,medical.transcription.user,model_medical_transcription,group_medical_transcription_user,1,1,1,0
+access_medical_transcription_manager,medical.transcription.manager,model_medical_transcription,group_medical_transcription_manager,1,1,1,1
