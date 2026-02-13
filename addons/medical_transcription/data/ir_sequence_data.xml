@@ -4,7 +4,7 @@
         <record id="seq_medical_transcription" model="ir.sequence">
             <field name="name">Medical Transcription</field>
             <field name="code">medical.transcription</field>
-            <field name="prefix">MT/</field>
+            <field name="prefix">TRANS/</field>
             <field name="padding">5</field>
         </record>
     </data>
